@@ -15,26 +15,26 @@ services:
     networks:
       - main_network
 
-#  backend_api:
-#    build:
-#      dockerfile: Dockerfile
-#      context: ./backend_api
-#    container_name: backend_api
-#    hostname: backend_api
-#    restart: always
-#    env_file:
-#      - .env
-#    volumes:
-#      - ./backend_api/app:/app
-#    ports:
-#      - "9999:9999"
-#    command: |
-#      sh -c "
-#      alembic upgrade head && \
-#      uvicorn main:app --port=9999 --host=0.0.0.0 --reload
-#      "
-#    networks:
-#      - main_network
+  backend_geo:
+    build:
+      dockerfile: Dockerfile
+      context: ./django_drf_backend
+    container_name: backend_geo
+    hostname: backend_geo
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./django_drf_backend:/app
+    ports:
+      - "8000:8000"
+    command: |
+      sh -c "
+      python manage.py migrate &&
+      gunicorn --bind 0.0.0.0:8000 --reload core.wsgi:application
+      "
+    networks:
+      - main_network
 
   react_frontend:
     hostname: react_frontend
