@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config as env_config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -120,3 +121,24 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# S3
+
+CLOUDFLARE_R2_CONFIG_OPTIONS = {
+    "bucket_name": env_config("CLOUDFLARE_R2_BUCKET"),
+    "default_acl": "public-read",  # "private"
+    "signature_version": "s3v4",
+    "endpoint_url": env_config("CLOUDFLARE_R2_BUCKET_ENDPOINT"),
+    "access_key": env_config("CLOUDFLARE_R2_ACCESS_KEY"),
+    "secret_key": env_config("CLOUDFLARE_R2_SECRET_KEY"),
+}
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": CLOUDFLARE_R2_CONFIG_OPTIONS,
+    },
+    "staticfiles": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": CLOUDFLARE_R2_CONFIG_OPTIONS,
+    },
+}
