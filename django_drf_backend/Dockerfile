@@ -6,10 +6,26 @@ ENV PYTHONFAULTHANDLER=1 \
     PYTHONHASHSEED=random \
     PYTHONUNBUFFERED=1
 
-RUN apk add --update --no-cache --virtual .tmp-build-deps \
-    postgresql-client libc-dev build-base postgresql-dev linux-headers gcc gettext openssh-client curl && \
-    pip install --upgrade pip
+RUN apk add --no-cache --virtual .build-deps \
+    build-base \
+    gcc \
+    musl-dev \
+    libc-dev \
+    linux-headers \
+    postgresql-dev \
+    gdal-dev \
+    geos-dev \
+    proj-dev \
+    gdal \
+    postgresql-client \
+    curl \
+    git \
+    openssh-client \
+    gettext
 
+# Встановіть змінну середовища, щоб Django міг знайти бібліотеку
+ENV GDAL_LIBRARY_PATH=/usr/lib/libgdal.so
+ENV GEOS_LIBRARY_PATH=/usr/lib/libgeos.so
 
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt

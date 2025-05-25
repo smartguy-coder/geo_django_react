@@ -27,3 +27,8 @@ https://github.com/codingforentrepreneurs/django-cloudflare-r2
 
 
 
+https://qgis.org/
+https://data.humdata.org/dataset/cod-ab-ukr
+https://www.geopackage.org/
+
+
