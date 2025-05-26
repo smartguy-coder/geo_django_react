@@ -3,7 +3,7 @@
 для створення реакт додатку
 npm create vite@latest
 
-
+https://youtu.be/YnCIBd6IItE?si=C64PBB-xOEdIQbm6  базове відео
 [//]: # (встановлення uv windows &#40;powershell&#41;)
 [//]: # (irm https://astral.sh/uv/install.ps1 | iex)
 [//]: # ($env:Path = "C:\Users\Василий работа\.local\bin;$env:Path")

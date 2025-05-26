@@ -42,6 +42,12 @@ INSTALLED_APPS = [
     'django.contrib.gis',
 
     'facilities',
+    'leaflet',
+    'rest_framework',
+    'rest_framework_gis',
+    "drf_spectacular",
+    "corsheaders",
+
 
 ]
 
@@ -156,4 +162,23 @@ STORAGES = {
         "BACKEND": "storages.backends.s3.S3Storage",
         "OPTIONS": CLOUDFLARE_R2_CONFIG_OPTIONS,
     },
+}
+
+
+LEAFLET_CONFIG = {
+    'TILES': 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    'DEFAULT_CENTER': (50.4501, 30.5234),
+    'DEFAULT_ZOOM': 6,
+    'MIN_ZOOM': 3,
+    'MAX_ZOOM': 18,
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Your API',
+    'DESCRIPTION': 'API for polygon facilities',
+    'VERSION': '1.0.0',
 }

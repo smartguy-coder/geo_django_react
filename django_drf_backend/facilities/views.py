@@ -1,3 +1,9 @@
-from django.shortcuts import render
+# views.py
+from rest_framework import viewsets
+from .models import FacilitesPoligons
+from .serializers import FacilitesPoligonsSerializer
 
-# Create your views here.
+
+class FacilitesPoligonsViewSet(viewsets.ModelViewSet):
+    queryset = FacilitesPoligons.objects.all()
+    serializer_class = FacilitesPoligonsSerializer
