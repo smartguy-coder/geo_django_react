@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Polygon, Marker } from "react-leaflet";
-import "leaflet/dist/leaflet.css"; // Обов'язково імпортуйте CSS Leaflet
-import L from "leaflet"; // Імпортуємо Leaflet для виправлення іконок
+import { MapContainer, TileLayer, Polygon, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 
-// --- Виправлення для іконок Leaflet (обов'язково для Webpack/Create React App) ---
+// --- Виправлення для іконок Leaflet ---
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -14,10 +14,10 @@ L.Icon.Default.mergeOptions({
 // -------------------------------------------------------------------------------
 
 function App() {
-  // Назвемо головний компонент App
   const [polygons, setPolygons] = useState([]);
   const [points, setPoints] = useState([]);
-  const [activePolygonId, setActivePolygonId] = useState(null);
+  // Змінено: тепер це масив ID
+  const [selectedPolygonIds, setSelectedPolygonIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -45,15 +45,23 @@ function App() {
     fetchPolygons();
   }, []);
 
-  // Функція для обробки кліку по полігону та отримання точок
+  // Функція для обробки кліку по полігону
   const handlePolygonClick = async (polygonId) => {
-    if (activePolygonId === polygonId) {
-      // Якщо клікнули на той самий полігон, прибираємо точки
-      setPoints([]);
-      setActivePolygonId(null);
-      return;
-    }
+    // Оновлюємо масив вибраних полігонів
+    setSelectedPolygonIds((prevSelected) => {
+      if (prevSelected.includes(polygonId)) {
+        // Якщо полігон вже вибраний, видаляємо його
+        return prevSelected.filter((id) => id !== polygonId);
+      } else {
+        // Якщо полігон не вибраний, додаємо його
+        return [...prevSelected, polygonId];
+      }
+    });
 
+    // --- Логіка завантаження точок залишається для останнього клікнутого полігону ---
+    // Якщо ви хочете завантажувати точки для всіх вибраних полігонів,
+    // вам потрібно буде змінити логіку тут (наприклад, зробити кілька fetch-запитів
+    // або змінити бекенд API для прийому масиву ID).
     setLoading(true);
     setError(null);
     try {
@@ -64,17 +72,15 @@ function App() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      // Ваш API повертає FeatureCollection для точок
       setPoints(data.features);
-      setActivePolygonId(polygonId);
     } catch (err) {
       console.error(`Error fetching points for polygon ${polygonId}:`, err);
       setError("Не вдалося завантажити точки для цього полігону.");
       setPoints([]); // Очистити точки у разі помилки
-      setActivePolygonId(null);
     } finally {
       setLoading(false);
     }
+    // ---------------------------------------------------------------------------------
   };
 
   if (loading && polygons.length === 0) {
@@ -108,7 +114,7 @@ function App() {
       <MapContainer
         center={[49.0, 31.0]} // Центр України
         zoom={6}
-        style={{ flexGrow: 1, height: "auto", width: "100%" }} // Карта займе весь доступний простір
+        style={{ flexGrow: 1, height: "auto", width: "100%" }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -116,18 +122,18 @@ function App() {
         />
 
         {polygons.map((polygonFeature) => {
-          // Координати з GeoJSON зазвичай [довгота, широта], Leaflet очікує [широта, довгота]
           const coordinates = polygonFeature.geometry.coordinates[0].map(
             (coord) => [coord[1], coord[0]]
           );
-          const isSelected = polygonFeature.id === activePolygonId;
+          // Перевіряємо, чи є ID поточного полігону в масиві вибраних
+          const isSelected = selectedPolygonIds.includes(polygonFeature.id);
           const polygonColor = isSelected ? "#007bff" : "#ff7800"; // Синій для вибраного, помаранчевий для інших
 
           return (
             <Polygon
               key={polygonFeature.id}
               positions={coordinates}
-              pathOptions={{ color: polygonColor, weight: isSelected ? 4 : 2 }} // Товстіший контур для вибраного
+              pathOptions={{ color: polygonColor, weight: isSelected ? 4 : 2 }}
               eventHandlers={{
                 click: () => handlePolygonClick(polygonFeature.id),
               }}
@@ -142,22 +148,20 @@ function App() {
         })}
 
         {points.map((pointFeature) => {
-          // Координати точки з GeoJSON [довгота, широта]
           const coordinates = pointFeature.geometry.coordinates;
-          const position = [coordinates[1], coordinates[0]]; // Перетворюємо для Leaflet
+          const position = [coordinates[1], coordinates[0]];
 
           return (
             <Marker key={pointFeature.id} position={position}>
-              {/* Можна додати спливаюче вікно з інформацією про точку */}
-              {/* <Popup>
-                                <h3>{pointFeature.properties.name}</h3>
-                                <p>{pointFeature.properties.description}</p>
-                            </Popup> */}
+              <Popup>
+                <h3>{pointFeature.properties.name}</h3>
+                <p>{pointFeature.properties.description}</p>
+              </Popup>
             </Marker>
           );
         })}
       </MapContainer>
-      {loading && points.length === 0 && activePolygonId && (
+      {loading && points.length === 0 && selectedPolygonIds.length > 0 && (
         <div
           style={{
             textAlign: "center",
@@ -168,7 +172,7 @@ function App() {
           Завантаження точок...
         </div>
       )}
-      {error && points.length === 0 && activePolygonId && (
+      {error && points.length === 0 && selectedPolygonIds.length > 0 && (
         <div
           style={{
             textAlign: "center",
@@ -184,4 +188,4 @@ function App() {
   );
 }
 
-export default App; // Експортуємо компонент для використання в index.js
+export default App;
