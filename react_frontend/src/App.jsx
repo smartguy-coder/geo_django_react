@@ -26,7 +26,9 @@ function App() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("http://127.0.0.1/api/poligons/");
+      const response = await fetch(
+        "https://7e7a-188-130-177-189.ngrok-free.app/api/poligons/"
+      );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -66,7 +68,7 @@ function App() {
     setError(null);
     try {
       const response = await fetch(
-        `http://127.0.0.1/api/poligons/${polygonId}/points_inside/`
+        `https://7e7a-188-130-177-189.ngrok-free.app/api/poligons/${polygonId}/points_inside/`
       );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
